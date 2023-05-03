@@ -12,6 +12,7 @@ public class SlingshotController : MouseManipulator
         target.RegisterCallback<MouseDownEvent>(OnMouseDown);
         target.RegisterCallback<MouseMoveEvent>(OnMouseMove);
         target.RegisterCallback<MouseUpEvent>(OnMouseUp);
+        target.RegisterCallback<MouseLeaveEvent>(OnMouseLeave);
     }
 
     protected override void UnregisterCallbacksFromTarget()
@@ -19,6 +20,7 @@ public class SlingshotController : MouseManipulator
         target.UnregisterCallback<MouseDownEvent>(OnMouseDown);
         target.UnregisterCallback<MouseMoveEvent>(OnMouseMove);
         target.UnregisterCallback<MouseUpEvent>(OnMouseUp);
+        target.UnregisterCallback<MouseLeaveEvent>(OnMouseLeave);
     }
 
     void OnMouseDown(MouseDownEvent evt)
@@ -42,7 +44,7 @@ public class SlingshotController : MouseManipulator
         Vector2 diffFromTarget = evt.mousePosition - targetLayoutPos;
         //diff = diff.normalized;
         float angleRadian = -Mathf.Atan2(diffFromTarget.x, diffFromTarget.y);
-        Debug.Log(diffFromTarget.magnitude);
+        //Debug.Log(diffFromTarget.magnitude);
 
         float targetHalfHeight = target.layout.height * 0.5f;
 
@@ -64,5 +66,15 @@ public class SlingshotController : MouseManipulator
         target.ReleaseMouse();
         target.transform.scale = Vector3.one;
         //target.transform.rotation = Quaternion.identity;
+    }
+
+    void OnMouseLeave(MouseLeaveEvent evt)
+    {
+        if (!target.HasMouseCapture())
+            return;
+
+
+        target.ReleaseMouse();
+        target.transform.scale = Vector3.one;
     }
 }

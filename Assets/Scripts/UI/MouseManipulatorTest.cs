@@ -49,8 +49,6 @@ public class MouseManipulatorTest : MouseManipulator
 
         Vector2 diff = evt.localMousePosition - startPos;
 
-        Debug.Log(diff);
-
         target.transform.position += new Vector3(diff.x, diff.y, 0.0f);
     }
 

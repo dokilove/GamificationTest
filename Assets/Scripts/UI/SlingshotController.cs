@@ -5,8 +5,16 @@ using UnityEngine.UIElements;
 public class SlingshotController : MouseManipulator
 {
     public Vector2 startGlobalPos;
-    public Vector3 targetTransformPos;
     public Vector2 targetLayoutPos;
+    Vector2 diffFromTarget;
+
+    VisualElement root;
+    public SlingshotController(VisualElement root)
+    {
+        this.root = root;
+    }
+
+    
     protected override void RegisterCallbacksOnTarget()
     {
         target.RegisterCallback<MouseDownEvent>(OnMouseDown);
@@ -27,9 +35,8 @@ public class SlingshotController : MouseManipulator
     {
 
         startGlobalPos = evt.mousePosition;
-        targetTransformPos = target.transform.position;
         targetLayoutPos = target.layout.center;
-        Debug.Log(targetLayoutPos);
+        //Debug.Log(targetLayoutPos);
 
         target.CaptureMouse();
     }
@@ -39,9 +46,9 @@ public class SlingshotController : MouseManipulator
         if (!target.HasMouseCapture())
             return;
 
-        Vector2 diff = evt.mousePosition - startGlobalPos;
+        //Vector2 diff = evt.mousePosition - startGlobalPos;
 
-        Vector2 diffFromTarget = evt.mousePosition - targetLayoutPos;
+        diffFromTarget = evt.mousePosition - targetLayoutPos;
         //diff = diff.normalized;
         float angleRadian = -Mathf.Atan2(diffFromTarget.x, diffFromTarget.y);
         //Debug.Log(diffFromTarget.magnitude);
@@ -55,6 +62,8 @@ public class SlingshotController : MouseManipulator
         target.transform.rotation =  Quaternion.AngleAxis(Mathf.Rad2Deg * angleRadian, Vector3.forward);
 
         //target.transform.position += new Vector3(diff.x, diff.y, 0.0f);
+
+        Debug.Log(diffFromTarget.x + " " + diffFromTarget.y + " " + target.transform.position);
     }
 
     void OnMouseUp(MouseUpEvent evt)
@@ -66,6 +75,10 @@ public class SlingshotController : MouseManipulator
         target.ReleaseMouse();
         target.transform.scale = Vector3.one;
         //target.transform.rotation = Quaternion.identity;
+
+        //target.transform.position += new Vector3(-diffFromTarget.x, -diffFromTarget.y, 0.0f);
+        target.style.top = target.layout.y - diffFromTarget.y;
+        target.style.left = target.layout.x - diffFromTarget.x;
     }
 
     void OnMouseLeave(MouseLeaveEvent evt)
@@ -76,5 +89,10 @@ public class SlingshotController : MouseManipulator
 
         target.ReleaseMouse();
         target.transform.scale = Vector3.one;
+
+        //target.transform.position += new Vector3(-diffFromTarget.x, -diffFromTarget.y, 0.0f);
+
+        target.style.top = target.layout.y - diffFromTarget.y;
+        target.style.left = target.layout.x - diffFromTarget.x;
     }
 }

@@ -14,6 +14,6 @@ public class ColorizerTest : MonoBehaviour
         test.AddManipulator(new MouseManipulatorTest());
 
         VisualElement elasticBand = root.Q<VisualElement>("elastic_band");
-        elasticBand.AddManipulator(new SlingshotController());
+        elasticBand.AddManipulator(new SlingshotController(root));
     }
 }

@@ -201,3 +201,4 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   speed: 20
   friction: 10
+  overlapThreshold: 10

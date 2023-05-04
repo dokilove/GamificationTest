@@ -5,8 +5,8 @@ using UnityEngine.UIElements;
 
 public class Controller : MonoBehaviour
 {
-    public float speed = 10.0f;
-    public float friction = 100.0f;
+    public float speed = 20.0f;
+    public float friction = 10.0f;
     public float overlapThreshold = 10.0f;
 
     VisualElement stage;
@@ -46,9 +46,6 @@ public class Controller : MonoBehaviour
         {
             currentPos += direction * velocity * speed * Time.deltaTime;
 
-            icon.style.left = currentPos.x - icon.layout.width * 0.5f;
-            icon.style.top = currentPos.y - icon.layout.height * 0.5f;
-
             velocity -= friction;
 
             if (currentPos.x < stage.layout.x || currentPos.x > stage.layout.width + stage.layout.x) 
@@ -61,6 +58,9 @@ public class Controller : MonoBehaviour
                 direction.y = -direction.y;
                 AdjustPositionY(currentPos);
             }
+
+            icon.style.left = currentPos.x - icon.layout.width * 0.5f;
+            icon.style.top = currentPos.y - icon.layout.height * 0.5f;
 
             yield return null;
         }

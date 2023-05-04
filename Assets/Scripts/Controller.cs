@@ -7,6 +7,7 @@ public class Controller : MonoBehaviour
 {
     public float speed = 10.0f;
     public float friction = 100.0f;
+    public float overlapThreshold = 10.0f;
 
     VisualElement stage;
 
@@ -30,8 +31,8 @@ public class Controller : MonoBehaviour
 
     IEnumerator MoveToTargetCoroutine(VisualElement icon, Vector2 diff)
     {
-        Vector2 initialPos = new Vector2(icon.layout.x, icon.layout.y);
-        Vector2 targetPos = new Vector2(icon.layout.x - diff.x, icon.layout.y - diff.y);
+        Vector2 initialPos = new Vector2(icon.layout.center.x, icon.layout.center.y);
+        Vector2 targetPos = new Vector2(icon.layout.center.x - diff.x, icon.layout.center.y - diff.y);
 
         float velocity = (initialPos - targetPos).magnitude;
 
@@ -43,46 +44,62 @@ public class Controller : MonoBehaviour
 
         while (velocity > 0.0f)
         {
-
-            //if (currentPos.x < 0.0f || currentPos.x > root.layout.width)
-            //{
-            //    Debug.Log(root.layout.width + " " + root.layout.height);
-            //    Debug.Log(currentPos.x + " " + currentPos.y);
-            //    diffX = diff.x;
-            //}
-
-            //if (currentPos.y < 0.0f || currentPos.y > root.layout.height)
-            //{
-            //    Debug.Log(root.layout.width + " " + root.layout.height);
-            //    Debug.Log(currentPos.x + " " + currentPos.y);
-            //    diffY = diff.y;
-            //}
-
             currentPos += direction * velocity * speed * Time.deltaTime;
 
-            icon.style.left = currentPos.x;
-            icon.style.top = currentPos.y;
+            icon.style.left = currentPos.x - icon.layout.width * 0.5f;
+            icon.style.top = currentPos.y - icon.layout.height * 0.5f;
 
-            Debug.Log(velocity);
             velocity -= friction;
 
-            Debug.Log(stage.layout.x + " " + stage.layout.width + " " + stage.layout.y +  " " + stage.layout.height);
-
-            if (currentPos.x < stage.layout.x || currentPos.x > stage.layout.width - stage.layout.x) 
+            if (currentPos.x < stage.layout.x || currentPos.x > stage.layout.width + stage.layout.x) 
             {
                 direction.x = -direction.x;
+                AdjustPositionX(currentPos);
             }
-            if (currentPos.y < stage.layout.y || currentPos.y > stage.layout.height - stage.layout
-                .y)
+            if (currentPos.y < stage.layout.y || currentPos.y > stage.layout.height + stage.layout.y)
             {
                 direction.y = -direction.y;
+                AdjustPositionY(currentPos);
             }
 
             yield return null;
         }
-
-        //icon.style.top = targetPos.y;
-        //icon.style.left = targetPos.x;
     }
-    
+
+    void AdjustPositionX(Vector2 currentPos)
+    {
+        float offset = 0;
+        if (currentPos.x < stage.layout.x)
+        {
+            offset = stage.layout.x - currentPos.x;
+        }
+        else if (currentPos.x > stage.layout.width + stage.layout.x)
+        {
+            offset = stage.layout.width + stage.layout.x - currentPos.x;
+        }
+
+        if (Mathf.Abs(offset) > overlapThreshold)
+        {
+            currentPos.x += offset;
+        }
+    }
+
+    void AdjustPositionY(Vector2 currentPos)
+    {
+        float offset = 0;
+        if (currentPos.y < stage.layout.y)
+        {
+            offset = stage.layout.y - currentPos.y;
+        }
+        else if (currentPos.y > stage.layout.height + stage.layout.y)
+        {
+            offset = stage.layout.height + stage.layout.y - currentPos.y;
+        }
+
+        if (Mathf.Abs(offset) > overlapThreshold)
+        {
+            currentPos.y += offset;
+        }
+    }
+
 }

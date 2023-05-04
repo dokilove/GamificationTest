@@ -4,14 +4,17 @@ using UnityEngine;
 using UnityEngine.UIElements;
 public class SlingshotController : MouseManipulator
 {
+    Controller controller;
+
     public Vector2 startGlobalPos;
     public Vector2 targetLayoutPos;
-    Vector2 diffFromTarget;
+    Vector2 diff;
 
     VisualElement root;
-    public SlingshotController(VisualElement root)
+    public SlingshotController(VisualElement root, Controller controller)
     {
         this.root = root;
+        this.controller = controller;
     }
 
     
@@ -48,14 +51,14 @@ public class SlingshotController : MouseManipulator
 
         //Vector2 diff = evt.mousePosition - startGlobalPos;
 
-        diffFromTarget = evt.mousePosition - targetLayoutPos;
+        diff = evt.mousePosition - targetLayoutPos;
         //diff = diff.normalized;
-        float angleRadian = -Mathf.Atan2(diffFromTarget.x, diffFromTarget.y);
+        float angleRadian = -Mathf.Atan2(diff.x, diff.y);
         //Debug.Log(diffFromTarget.magnitude);
 
         float targetHalfHeight = target.layout.height * 0.5f;
 
-        float scale = (diffFromTarget.magnitude + targetHalfHeight) / targetHalfHeight;
+        float scale = (diff.magnitude + targetHalfHeight) / targetHalfHeight;
 
         target.transform.scale = scale < 1.0f ? Vector3.one : new Vector3(1.0f, scale, 1.0f);
 
@@ -63,36 +66,30 @@ public class SlingshotController : MouseManipulator
 
         //target.transform.position += new Vector3(diff.x, diff.y, 0.0f);
 
-        Debug.Log(diffFromTarget.x + " " + diffFromTarget.y + " " + target.transform.position);
+        //Debug.Log(target.style.top + " " + target.style.left + " " + target.transform.position);
     }
 
     void OnMouseUp(MouseUpEvent evt)
     {
-        if (!target.HasMouseCapture())
-            return;
-
-
-        target.ReleaseMouse();
-        target.transform.scale = Vector3.one;
-        //target.transform.rotation = Quaternion.identity;
-
-        //target.transform.position += new Vector3(-diffFromTarget.x, -diffFromTarget.y, 0.0f);
-        target.style.top = target.layout.y - diffFromTarget.y;
-        target.style.left = target.layout.x - diffFromTarget.x;
+        MoveController();
     }
 
     void OnMouseLeave(MouseLeaveEvent evt)
     {
+        MoveController();
+    }
+
+    void MoveController()
+    {
         if (!target.HasMouseCapture())
             return;
-
 
         target.ReleaseMouse();
         target.transform.scale = Vector3.one;
 
-        //target.transform.position += new Vector3(-diffFromTarget.x, -diffFromTarget.y, 0.0f);
+        controller.MoveToTarget(target, diff);
 
-        target.style.top = target.layout.y - diffFromTarget.y;
-        target.style.left = target.layout.x - diffFromTarget.x;
+        //target.style.top = target.layout.y - direction.y;
+        //target.style.left = target.layout.x - direction.x;
     }
 }

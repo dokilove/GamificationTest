@@ -5,6 +5,7 @@ using UnityEngine.UIElements;
 
 public class ColorizerTest : MonoBehaviour
 {
+    public Controller controller;
     private void OnEnable()
     {
         VisualElement root = GetComponent<UIDocument>().rootVisualElement;
@@ -14,6 +15,6 @@ public class ColorizerTest : MonoBehaviour
         test.AddManipulator(new MouseManipulatorTest());
 
         VisualElement elasticBand = root.Q<VisualElement>("elastic_band");
-        elasticBand.AddManipulator(new SlingshotController(root));
+        elasticBand.AddManipulator(new SlingshotController(root, controller));
     }
 }

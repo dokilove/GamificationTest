@@ -2,7 +2,7 @@
     <ui:VisualElement style="flex-grow: 1; align-items: center; justify-content: center; background-color: rgb(8, 147, 0);">
         <ui:VisualElement name="TestElem" style="width: 400px; height: 400px; background-color: rgb(255, 255, 255); position: absolute;" />
         <ui:VisualElement name="elastic_band" style="position: absolute; background-color: rgb(255, 0, 0); width: 200px; height: 400px; top: 600px; left: 704px;">
-            <ui:VisualElement style="width: 75px; height: 75px; background-color: rgba(255, 255, 255, 255); border-top-left-radius: 50px; border-bottom-left-radius: 50px; border-top-right-radius: 50px; border-bottom-right-radius: 50px;" />
+            <ui:VisualElement style="width: 75px; height: 75px; background-color: rgb(255, 255, 255); border-top-left-radius: 50px; border-bottom-left-radius: 50px; border-top-right-radius: 50px; border-bottom-right-radius: 50px;" />
         </ui:VisualElement>
     </ui:VisualElement>
 </ui:UXML>

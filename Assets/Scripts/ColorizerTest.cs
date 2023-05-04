@@ -10,6 +10,9 @@ public class ColorizerTest : MonoBehaviour
     {
         VisualElement root = GetComponent<UIDocument>().rootVisualElement;
 
+        VisualElement stage = root.Q<VisualElement>("stage");
+        controller.SetStage(stage);
+
         VisualElement test = root.Q<VisualElement>("TestElem");
 
         test.AddManipulator(new MouseManipulatorTest());

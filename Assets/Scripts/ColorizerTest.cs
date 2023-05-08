@@ -10,12 +10,21 @@ public class ColorizerTest : MonoBehaviour
     {
         VisualElement root = GetComponent<UIDocument>().rootVisualElement;
 
+
+        List<VisualElement> otherObjects = new List<VisualElement>();
+        VisualElement test1 = root.Q<VisualElement>("TestElem1");
+        test1.AddManipulator(new MouseManipulatorTest());
+        otherObjects.Add(test1);
+        VisualElement test2 = root.Q<VisualElement>("TestElem2");
+        test2.AddManipulator(new MouseManipulatorTest());
+        otherObjects.Add(test2);
+        VisualElement test3 = root.Q<VisualElement>("TestElem3");
+        test3.AddManipulator(new MouseManipulatorTest());
+        otherObjects.Add(test3);
+
         VisualElement stage = root.Q<VisualElement>("stage");
-        controller.SetStage(stage);
+        controller.SetStage(stage, otherObjects);
 
-        VisualElement test = root.Q<VisualElement>("TestElem");
-
-        test.AddManipulator(new MouseManipulatorTest());
 
         VisualElement elasticBand = root.Q<VisualElement>("elastic_band");
         elasticBand.AddManipulator(new SlingshotController(root, controller));

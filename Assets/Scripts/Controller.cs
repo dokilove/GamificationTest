@@ -13,9 +13,12 @@ public class Controller : MonoBehaviour
 
     IEnumerator moveCoroutine;
 
-    public void SetStage(VisualElement stage)
+    List<VisualElement> otherObjects;
+
+    public void SetStage(VisualElement stage, List<VisualElement> otherObjects)
     {
         this.stage = stage;
+        this.otherObjects = otherObjects;
     }
 
     public void MoveToTarget(VisualElement icon, Vector2 direction)
@@ -56,11 +59,33 @@ public class Controller : MonoBehaviour
                 // Calculate the reflection vector
                 Vector2 normal = (currentPos - closestPoint).normalized;
                 Vector2 reflection = Vector2.Reflect(direction, normal);
-                Debug.Log(reflection + " " + reflection.normalized);
+
                 // Update the direction
                 direction = reflection;
-
+                
                 currentPos = closestPoint + direction.normalized * (velocity * speed * Time.deltaTime - Vector2.Distance(currentPos, closestPoint));
+            }
+
+            if (null != otherObjects)
+            {
+                for (int i = 0; i < otherObjects.Count; ++i)
+                {
+                    VisualElement otherObject = otherObjects[i];
+                    if (otherObject.layout.Contains(currentPos))
+                    {
+                        // Find the closest point on the rect boundary
+                        Vector2 closestPoint = ClosestPointOnRect(currentPos, otherObject.layout);
+
+                        // Calculate the reflection vector
+                        Vector2 normal = (currentPos - closestPoint).normalized;
+                        Vector2 reflection = Vector2.Reflect(direction, normal);
+                        //Debug.Log("normal " + normal);
+                        // Update the direction
+                        direction = reflection;
+
+                        currentPos = closestPoint + direction.normalized * (velocity * speed * Time.deltaTime - Vector2.Distance(currentPos, closestPoint));
+                    }
+                }
             }
 
             //Debug.Log(stage.layout.Contains(icon.layout.center));
@@ -96,5 +121,21 @@ public class Controller : MonoBehaviour
         return new Vector2(closestX, closestY);
     }
 
+    private Vector2 ClosestPointOnRect(Vector2 point, Rect rect)
+    {
+        float closestX = Mathf.Clamp(point.x, rect.xMin, rect.xMax);
+        float closestY = Mathf.Clamp(point.y, rect.yMin, rect.yMax);
+
+        if (Mathf.Abs(point.x - closestX) < Mathf.Abs(point.y - closestY))
+        {
+            closestY = point.y < rect.yMin ? rect.yMin : rect.yMax;
+        }
+        else
+        {
+            closestX = point.x < rect.xMin ? rect.xMin : rect.xMax;
+        }
+
+        return new Vector2(closestX, closestY);
+    }
 
 }

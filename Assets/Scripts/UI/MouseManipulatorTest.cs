@@ -49,7 +49,10 @@ public class MouseManipulatorTest : MouseManipulator
 
         Vector2 diff = evt.localMousePosition - startPos;
 
-        target.transform.position += new Vector3(diff.x, diff.y, 0.0f);
+        //target.transform.position += new Vector3(diff.x, diff.y, 0.0f);
+
+        target.style.left = target.layout.x + diff.x;
+        target.style.top = target.layout.y + diff.y;
     }
 
     void OnMouseUp(MouseUpEvent evt)

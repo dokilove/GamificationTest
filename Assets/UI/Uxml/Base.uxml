@@ -1,8 +1,10 @@
 <ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" editor-extension-mode="False">
     <ui:VisualElement style="flex-grow: 1; align-items: center; justify-content: center; background-color: rgb(8, 147, 0);">
-        <ui:VisualElement name="stage" style="width: 80%; height: 80%; background-color: rgba(72, 72, 72, 255);" />
-        <ui:VisualElement name="TestElem" style="width: 400px; height: 400px; background-color: rgb(255, 255, 255); position: absolute;" />
-        <ui:VisualElement name="elastic_band" style="position: absolute; background-color: rgb(255, 0, 0); width: 200px; height: 400px; top: 600px; left: 704px;">
+        <ui:VisualElement name="stage" style="width: 80%; height: 80%; background-color: rgb(72, 72, 72);" />
+        <ui:VisualElement name="TestElem1" style="width: 400px; height: 400px; background-color: rgb(255, 255, 255); position: absolute; top: 664px; left: 772px;" />
+        <ui:VisualElement name="TestElem2" style="width: 400px; height: 400px; background-color: rgb(255, 255, 255); position: absolute; top: 164px; left: 1056px;" />
+        <ui:VisualElement name="TestElem3" style="width: 400px; height: 400px; background-color: rgb(255, 255, 255); position: absolute; top: 816px; left: 1280px;" />
+        <ui:VisualElement name="elastic_band" style="position: absolute; background-color: rgb(255, 0, 0); width: 200px; height: 400px; top: 660px; left: 472px;">
             <ui:VisualElement style="width: 75px; height: 75px; background-color: rgb(255, 255, 255); border-top-left-radius: 50px; border-bottom-left-radius: 50px; border-top-right-radius: 50px; border-bottom-right-radius: 50px;" />
         </ui:VisualElement>
     </ui:VisualElement>

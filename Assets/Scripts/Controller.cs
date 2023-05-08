@@ -44,28 +44,26 @@ public class Controller : MonoBehaviour
 
         while (velocity > 0.0f)
         {
-            // Rect 안에 있는지 체크합니다.
-            bool isInside = stage.layout.Contains(currentPos);
-
-            // Rect 안에 있지 않으면 방향을 바꿔줍니다.
-            if (!isInside)
-            {
-                // 현재 위치를 기준으로 Rect와 가장 가까운 점을 구합니다.
-                Vector2 closestPoint = ClosestPoint(stage.layout, currentPos);
-
-                // 가장 가까운 점과 현재 위치의 차이 벡터를 구합니다.
-                Vector2 difference = currentPos - closestPoint;
-
-                // 차이 벡터를 reflection vector로 변환합니다.
-                Vector2 reflection = Vector2.Reflect(difference, stage.layout.center - closestPoint).normalized;
-
-                // 새로운 방향을 reflection vector로 설정합니다.
-                direction = reflection;
-            }
 
             currentPos += direction * velocity * speed * Time.deltaTime;
 
-            Debug.Log(stage.layout.Contains(icon.layout.center));
+            // Rect 안에 있지 않으면 방향을 바꿔줍니다.
+            if (!stage.layout.Contains(currentPos))
+            {
+                // Find the closest point on the rect boundary
+                Vector2 closestPoint = ClosestPointOnRectBoundary(currentPos, stage.layout);
+
+                // Calculate the reflection vector
+                Vector2 normal = (currentPos - closestPoint).normalized;
+                Vector2 reflection = Vector2.Reflect(direction, normal);
+                Debug.Log(reflection + " " + reflection.normalized);
+                // Update the direction
+                direction = reflection;
+
+                currentPos = closestPoint + direction.normalized * (velocity * speed * Time.deltaTime - Vector2.Distance(currentPos, closestPoint));
+            }
+
+            //Debug.Log(stage.layout.Contains(icon.layout.center));
 
             velocity -= friction;
 
@@ -75,23 +73,28 @@ public class Controller : MonoBehaviour
             yield return null;
         }
     }
-    public static Vector2 ClosestPoint(Rect rect, Vector2 point)
+
+    private Vector2 ClosestPointOnRectBoundary(Vector2 point, Rect rect)
     {
-        Vector2 closestPoint = point;
-        closestPoint.x = Mathf.Clamp(closestPoint.x, rect.xMin, rect.xMax);
-        closestPoint.y = Mathf.Clamp(closestPoint.y, rect.yMin, rect.yMax);
-        if (!rect.Contains(point))
+        if (rect.Contains(point))
         {
-            if (point.x < rect.xMin)
-                closestPoint.x = rect.xMin;
-            else if (point.x > rect.xMax)
-                closestPoint.x = rect.xMax;
-            if (point.y < rect.yMin)
-                closestPoint.y = rect.yMin;
-            else if (point.y > rect.yMax)
-                closestPoint.y = rect.yMax;
+            return point;
         }
-        return closestPoint;
+
+        float closestX = Mathf.Clamp(point.x, rect.xMin, rect.xMax);
+        float closestY = Mathf.Clamp(point.y, rect.yMin, rect.yMax);
+
+        if (Mathf.Abs(point.x - closestX) < Mathf.Abs(point.y - closestY))
+        {
+            closestY = point.y < rect.yMin ? rect.yMin : rect.yMax;
+        }
+        else
+        {
+            closestX = point.x < rect.xMin ? rect.xMin : rect.xMax;
+        }
+
+        return new Vector2(closestX, closestY);
     }
+
 
 }

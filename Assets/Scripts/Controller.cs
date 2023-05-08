@@ -31,7 +31,6 @@ public class Controller : MonoBehaviour
         moveCoroutine = MoveToTargetCoroutine(icon, direction);
         StartCoroutine(moveCoroutine);
     }
-
     IEnumerator MoveToTargetCoroutine(VisualElement icon, Vector2 diff)
     {
         Vector2 initialPos = new Vector2(icon.layout.center.x, icon.layout.center.y);
@@ -47,13 +46,46 @@ public class Controller : MonoBehaviour
 
         while (velocity > 0.0f)
         {
-
             currentPos += direction * velocity * speed * Time.deltaTime;
 
-            // Rect 안에 있지 않으면 방향을 바꿔줍니다.
-            if (!stage.layout.Contains(currentPos))
+            bool hasCollision = false;
+            bool isInsideStage = stage.layout.Contains(currentPos);
+
+            if (isInsideStage)
             {
-                // Find the closest point on the rect boundary
+                for (int i = 0; i < otherObjects.Count; ++i)
+                {
+                    Rect obstacleRect = otherObjects[i].layout;
+
+                    if (PointRectCollision(currentPos, obstacleRect))
+                    {
+                        hasCollision = true;
+
+                        // Calculate the normal vector of the obstacle
+                        Vector2 normal = new Vector2(
+                        Mathf.Abs(currentPos.x - obstacleRect.xMin) < 100.0f ? -1.0f :
+                        Mathf.Abs(currentPos.x - obstacleRect.xMax) < 100.0f ? 1.0f : 0.0f,
+                        Mathf.Abs(currentPos.y - obstacleRect.yMin) < 100.0f ? -1.0f :
+                        Mathf.Abs(currentPos.y - obstacleRect.yMax) < 100.0f ? 1.0f : 0.0f);
+
+                        // Calculate the reflection vector
+                        Vector2 reflection = Vector2.Reflect(direction, normal);
+
+                        // Update the direction
+                        direction = reflection;
+
+                        // Move the current position to the closest point on the obstacle boundary
+                        float distanceToBoundary = Mathf.Min(Mathf.Abs(currentPos.x - obstacleRect.xMin), Mathf.Abs(currentPos.x - obstacleRect.xMax), Mathf.Abs(currentPos.y - obstacleRect.yMin), Mathf.Abs(currentPos.y - obstacleRect.yMax));
+                        currentPos += reflection.normalized * (distanceToBoundary + 0.1f);
+                    }
+                }
+            }
+
+            if (!hasCollision && !isInsideStage)
+            {
+                // If the current position is outside the stage, move it to the closest point on the stage boundary
+                //currentPos = ClosestPointOnRectBoundary(currentPos, stage.layout);
+
                 Vector2 closestPoint = ClosestPointOnRectBoundary(currentPos, stage.layout);
 
                 // Calculate the reflection vector
@@ -62,49 +94,91 @@ public class Controller : MonoBehaviour
 
                 // Update the direction
                 direction = reflection;
-                
+
                 currentPos = closestPoint + direction.normalized * (velocity * speed * Time.deltaTime - Vector2.Distance(currentPos, closestPoint));
             }
-
-            if (null != otherObjects)
-            {
-                for (int i = 0; i < otherObjects.Count; ++i)
-                {
-                    VisualElement otherObject = otherObjects[i];
-                    if (otherObject.layout.Contains(currentPos))
-                    {
-                        // Find the closest point on the rect boundary
-                        Vector2 closestPoint = ClosestPointOnRect(currentPos, otherObject.layout);
-
-                        // Calculate the reflection vector
-                        Vector2 normal = (currentPos - closestPoint).normalized;
-                        Vector2 reflection = Vector2.Reflect(direction, normal);
-                        //Debug.Log("normal " + normal);
-                        // Update the direction
-                        direction = reflection;
-
-                        currentPos = closestPoint + direction.normalized * (velocity * speed * Time.deltaTime - Vector2.Distance(currentPos, closestPoint));
-                    }
-                }
-            }
-
-            //Debug.Log(stage.layout.Contains(icon.layout.center));
 
             velocity -= friction;
 
             icon.style.left = currentPos.x - icon.layout.width * 0.5f;
             icon.style.top = currentPos.y - icon.layout.height * 0.5f;
-      
+
             yield return null;
         }
     }
 
+    //IEnumerator MoveToTargetCoroutine(VisualElement icon, Vector2 diff)
+    //{
+    //    Vector2 initialPos = new Vector2(icon.layout.center.x, icon.layout.center.y);
+    //    Vector2 targetPos = new Vector2(icon.layout.center.x - diff.x, icon.layout.center.y - diff.y);
+
+    //    float velocity = (initialPos - targetPos).magnitude;
+
+    //    Vector2 currentPos = initialPos;
+
+    //    float diffX = -diff.x;
+    //    float diffY = -diff.y;
+    //    Vector2 direction = new Vector2(diffX, diffY).normalized;
+
+    //    while (velocity > 0.0f)
+    //    {
+
+    //        currentPos += direction * velocity * speed * Time.deltaTime;
+
+    //        // Rect 안에 있지 않으면 방향을 바꿔줍니다.
+    //        if (!stage.layout.Contains(currentPos))
+    //        {
+    //            // Find the closest point on the rect boundary
+    //            Vector2 closestPoint = ClosestPointOnRectBoundary(currentPos, stage.layout);
+
+    //            // Calculate the reflection vector
+    //            Vector2 normal = (currentPos - closestPoint).normalized;
+    //            Vector2 reflection = Vector2.Reflect(direction, normal);
+
+    //            // Update the direction
+    //            direction = reflection;
+                
+    //            currentPos = closestPoint + direction.normalized * (velocity * speed * Time.deltaTime - Vector2.Distance(currentPos, closestPoint));
+    //        }
+    //        else if (null != otherObjects)
+    //        {
+    //            for (int i = 0; i < otherObjects.Count; ++i)
+    //            {
+    //                VisualElement otherObject = otherObjects[i];
+    //                if (PointRectCollision(currentPos, otherObject.layout))
+    //                {
+    //                    // Find the closest point on the rect boundary
+    //                    Vector2 closestPoint = ClosestPointOnRectBoundary(currentPos, otherObject.layout);
+
+    //                    // Calculate the reflection vector
+    //                    Vector2 normal = (currentPos - closestPoint).normalized;
+    //                    Vector2 reflection = Vector2.Reflect(direction, normal);
+    //                    //Debug.Log("normal " + normal);
+    //                    // Update the direction
+    //                    direction = reflection;
+
+    //                    currentPos = closestPoint + direction.normalized * (velocity * speed * Time.deltaTime - Vector2.Distance(currentPos, closestPoint));
+    //                }
+    //            }
+    //        }
+
+    //        //Debug.Log(stage.layout.Contains(icon.layout.center));
+
+    //        velocity -= friction;
+
+    //        icon.style.left = currentPos.x - icon.layout.width * 0.5f;
+    //        icon.style.top = currentPos.y - icon.layout.height * 0.5f;
+      
+    //        yield return null;
+    //    }
+    //}
+
     private Vector2 ClosestPointOnRectBoundary(Vector2 point, Rect rect)
     {
-        if (rect.Contains(point))
-        {
-            return point;
-        }
+        //if (rect.Contains(point))
+        //{
+        //    return point;
+        //}
 
         float closestX = Mathf.Clamp(point.x, rect.xMin, rect.xMax);
         float closestY = Mathf.Clamp(point.y, rect.yMin, rect.yMax);
@@ -120,22 +194,16 @@ public class Controller : MonoBehaviour
 
         return new Vector2(closestX, closestY);
     }
-
-    private Vector2 ClosestPointOnRect(Vector2 point, Rect rect)
+    bool PointRectCollision(Vector2 point, Rect rect)
     {
-        float closestX = Mathf.Clamp(point.x, rect.xMin, rect.xMax);
-        float closestY = Mathf.Clamp(point.y, rect.yMin, rect.yMax);
-
-        if (Mathf.Abs(point.x - closestX) < Mathf.Abs(point.y - closestY))
+        if (point.x < rect.xMin || point.x > rect.xMax ||
+            point.y < rect.yMin || point.y > rect.yMax)
         {
-            closestY = point.y < rect.yMin ? rect.yMin : rect.yMax;
-        }
-        else
-        {
-            closestX = point.x < rect.xMin ? rect.xMin : rect.xMax;
+            // point is outside rect bounds
+            return false;
         }
 
-        return new Vector2(closestX, closestY);
+        return true;
     }
 
 }

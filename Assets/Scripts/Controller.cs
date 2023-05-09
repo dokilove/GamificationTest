@@ -14,11 +14,13 @@ public class Controller : MonoBehaviour
     IEnumerator moveCoroutine;
 
     List<VisualElement> otherObjects;
+    Label debugLabel;
 
-    public void SetStage(VisualElement stage, List<VisualElement> otherObjects)
+    public void SetStage(VisualElement stage, List<VisualElement> otherObjects, Label debugLabel)
     {
         this.stage = stage;
         this.otherObjects = otherObjects;
+        this.debugLabel = debugLabel;
     }
 
     public void MoveToTarget(VisualElement icon, Vector2 direction)
@@ -37,6 +39,7 @@ public class Controller : MonoBehaviour
         Vector2 targetPos = new Vector2(icon.layout.center.x - diff.x, icon.layout.center.y - diff.y);
 
         float velocity = (initialPos - targetPos).magnitude;
+        float startVelocity = velocity;
 
         Vector2 currentPos = initialPos;
 
@@ -62,11 +65,13 @@ public class Controller : MonoBehaviour
                         hasCollision = true;
 
                         // Calculate the normal vector of the obstacle
+                        // Calculate the normal vector of the obstacle
+                        const float tolerance = 100.0f;
                         Vector2 normal = new Vector2(
-                        Mathf.Abs(currentPos.x - obstacleRect.xMin) < 100.0f ? -1.0f :
-                        Mathf.Abs(currentPos.x - obstacleRect.xMax) < 100.0f ? 1.0f : 0.0f,
-                        Mathf.Abs(currentPos.y - obstacleRect.yMin) < 100.0f ? -1.0f :
-                        Mathf.Abs(currentPos.y - obstacleRect.yMax) < 100.0f ? 1.0f : 0.0f);
+                            Mathf.Abs(currentPos.x - obstacleRect.xMin) < tolerance ? -1.0f :
+                            Mathf.Abs(currentPos.x - obstacleRect.xMax) < tolerance ? 1.0f : 0.0f,
+                            Mathf.Abs(currentPos.y - obstacleRect.yMin) < tolerance ? -1.0f :
+                            Mathf.Abs(currentPos.y - obstacleRect.yMax) < tolerance ? 1.0f : 0.0f);
 
                         // Calculate the reflection vector
                         Vector2 reflection = Vector2.Reflect(direction, normal);
@@ -77,6 +82,7 @@ public class Controller : MonoBehaviour
                         // Move the current position to the closest point on the obstacle boundary
                         float distanceToBoundary = Mathf.Min(Mathf.Abs(currentPos.x - obstacleRect.xMin), Mathf.Abs(currentPos.x - obstacleRect.xMax), Mathf.Abs(currentPos.y - obstacleRect.yMin), Mathf.Abs(currentPos.y - obstacleRect.yMax));
                         currentPos += reflection.normalized * (distanceToBoundary + 0.1f);
+
                     }
                 }
             }
@@ -103,9 +109,12 @@ public class Controller : MonoBehaviour
             icon.style.left = currentPos.x - icon.layout.width * 0.5f;
             icon.style.top = currentPos.y - icon.layout.height * 0.5f;
 
-            yield return null;
+            yield return new WaitForFixedUpdate();
+
+            debugLabel.text = "start Velocity: " + startVelocity + " friction: " + friction +  "\nvelocity: " + velocity;
         }
     }
+
 
     //IEnumerator MoveToTargetCoroutine(VisualElement icon, Vector2 diff)
     //{

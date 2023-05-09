@@ -6,10 +6,12 @@ using UnityEngine.UIElements;
 public class MouseManipulatorTest : MouseManipulator
 {
     public Vector2 startPos;
+    Label debugLabel;
 
-    public MouseManipulatorTest()
+    public MouseManipulatorTest(Label debugLabel)
     {
         activators.Add(new ManipulatorActivationFilter { clickCount = 2 });
+        this.debugLabel = debugLabel;
     }
     protected override void RegisterCallbacksOnTarget()
     {
@@ -53,6 +55,7 @@ public class MouseManipulatorTest : MouseManipulator
 
         target.style.left = target.layout.x + diff.x;
         target.style.top = target.layout.y + diff.y;
+        debugLabel.text = "mousePosition.x: " + evt.mousePosition.x + "\nmousePosition.y: " + evt.mousePosition.y;
     }
 
     void OnMouseUp(MouseUpEvent evt)

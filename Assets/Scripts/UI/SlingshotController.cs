@@ -11,10 +11,12 @@ public class SlingshotController : MouseManipulator
     Vector2 diff;
 
     VisualElement root;
-    public SlingshotController(VisualElement root, Controller controller)
+    Label debugLabel;
+    public SlingshotController(VisualElement root, Controller controller, Label debugLabel)
     {
         this.root = root;
         this.controller = controller;
+        this.debugLabel = debugLabel;
     }
 
     
@@ -67,6 +69,8 @@ public class SlingshotController : MouseManipulator
         //target.transform.position += new Vector3(diff.x, diff.y, 0.0f);
 
         //Debug.Log(target.style.top + " " + target.style.left + " " + target.transform.position);
+
+        debugLabel.text = "diff.magnutude: " + diff.magnitude + "\ndiff.x: " + diff.x + "\ndiff.y: " + diff.y;
     }
 
     void OnMouseUp(MouseUpEvent evt)

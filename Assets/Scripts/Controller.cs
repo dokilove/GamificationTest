@@ -12,6 +12,7 @@ public class Controller : MonoBehaviour
     VisualElement stage;
 
     IEnumerator moveCoroutine;
+    IEnumerator updateItemCoroutine;
 
     List<VisualElement> otherObjects;
     List<BreakableItem> otherCircles;
@@ -36,13 +37,22 @@ public class Controller : MonoBehaviour
         moveCoroutine = MoveToTargetCoroutine(icon, direction);
         StartCoroutine(moveCoroutine);
     }
-    IEnumerator MoveToTargetCoroutine(VisualElement icon, Vector2 diff)
+
+    public void UpdateItemPosition(BreakableItem item, Vector2 direction)
+    {
+        if (null != updateItemCoroutine)
+        {
+            StopCoroutine(updateItemCoroutine);
+        }
+        updateItemCoroutine = MoveToTargetCoroutine(item.Item, direction, true);
+        StartCoroutine(updateItemCoroutine);
+    }
+    IEnumerator MoveToTargetCoroutine(VisualElement icon, Vector2 diff, bool isItem = false)
     {
         Vector2 initialPos = new Vector2(icon.layout.center.x, icon.layout.center.y);
         Vector2 targetPos = new Vector2(icon.layout.center.x - diff.x, icon.layout.center.y - diff.y);
 
         float velocity = (initialPos - targetPos).magnitude;
-        float startVelocity = velocity;
 
         Vector2 currentPos = initialPos;
 
@@ -50,87 +60,11 @@ public class Controller : MonoBehaviour
         float diffY = -diff.y;
         Vector2 direction = new Vector2(diffX, diffY).normalized;
 
-        float radius = icon.layout.width * 0.5f;
-
         while (velocity > 0.0f)
         {
             currentPos += direction * velocity * speed * Time.deltaTime;
 
-            bool hasCollision = false;
-            bool isInsideStage = stage.layout.Contains(currentPos);
-
-            if (isInsideStage)
-            {
-                for (int i = 0; i < otherObjects.Count; ++i)
-                {
-                    Rect obstacleRect = otherObjects[i].layout;
-
-                    if (RectCircleCollision(currentPos, radius, obstacleRect))
-                    {
-                        hasCollision = true;
-
-                        Vector2 normal = GetCollisionNormal(currentPos, radius, obstacleRect);
-
-                        // Calculate the reflection vector
-                        Vector2 reflection = Vector2.Reflect(direction, normal);
-
-                        // Update the direction
-                        direction = reflection;
-
-                        // Move the current position to the closest point on the obstacle boundary
-                        float distanceToBoundary = Mathf.Min(Mathf.Abs(currentPos.x - obstacleRect.xMin), Mathf.Abs(currentPos.x - obstacleRect.xMax), Mathf.Abs(currentPos.y - obstacleRect.yMin), Mathf.Abs(currentPos.y - obstacleRect.yMax));
-                        currentPos += reflection.normalized * (distanceToBoundary + 0.1f);
-
-                    }
-                }
-
-                for (int i = 0; i < otherCircles.Count; ++i)
-                {
-                    Vector2 otherCenter = otherCircles[i].Item.layout.center;
-                    float otherRadius = otherCircles[i].Item.layout.width * 0.5f;
-
-                    if (CircleCircleCollision(currentPos, radius, otherCenter, otherRadius))
-                    {
-                        hasCollision = true;
-
-                        Vector2 normal = (currentPos - otherCenter).normalized;
-
-                        // Calculate the reflection vector
-                        Vector2 reflection = Vector2.Reflect(direction, normal);
-
-                        // Update the direction
-                        direction = reflection;
-
-                        // Move the current position to the closest point on the obstacle boundary
-                        float distanceToBoundary = Mathf.Abs(Vector2.Distance(currentPos, otherCenter) - (radius + otherRadius));
-                        currentPos += reflection.normalized * (distanceToBoundary + 0.1f);
-
-                        // Add score
-                        //score++;
-                        //scoreLabel.text = "Score: " + score.ToString();
-                        otherCircles[i].Hp--;
-                    }
-                }
-
-
-            }
-
-            if (!hasCollision && !isInsideStage)
-            {
-                // If the current position is outside the stage, move it to the closest point on the stage boundary
-                //currentPos = ClosestPointOnRectBoundary(currentPos, stage.layout);
-
-                Vector2 closestPoint = ClosestPointOnRectBoundary(currentPos, stage.layout);
-
-                // Calculate the reflection vector
-                Vector2 normal = (currentPos - closestPoint).normalized;
-                Vector2 reflection = Vector2.Reflect(direction, normal);
-
-                // Update the direction
-                direction = reflection;
-
-                currentPos = closestPoint + direction.normalized * (velocity * speed * Time.deltaTime - Vector2.Distance(currentPos, closestPoint));
-            }
+            CheckCollisionsWithStage(icon, ref currentPos, ref direction, ref velocity);
 
             velocity -= friction;
 
@@ -141,6 +75,108 @@ public class Controller : MonoBehaviour
 
         }
     }
+
+    private void CheckCollisionsWithStage(VisualElement icon, ref Vector2 currentPos, ref Vector2 direction, ref float velocity)
+    {        
+        bool hasCollision = false;
+        bool isInsideStage = stage.layout.Contains(currentPos);
+
+        if (isInsideStage)
+        {
+            CheckCollisionWithObstacles(icon, ref currentPos, ref direction, ref hasCollision);
+         
+            CheckCollisionWithItems(icon, ref currentPos, ref direction, ref hasCollision, velocity);
+        }
+
+        if (!hasCollision && !isInsideStage)
+        {
+            // If the current position is outside the stage, move it to the closest point on the stage boundary
+            //currentPos = ClosestPointOnRectBoundary(currentPos, stage.layout);
+
+            Vector2 closestPoint = ClosestPointOnRectBoundary(currentPos, stage.layout);
+
+            // Calculate the reflection vector
+            Vector2 normal = (currentPos - closestPoint).normalized;
+            Vector2 reflection = Vector2.Reflect(direction, normal);
+
+            // Update the direction
+            direction = reflection;
+
+            currentPos = closestPoint + direction.normalized * (velocity * speed * Time.deltaTime - Vector2.Distance(currentPos, closestPoint));
+        }
+    }
+
+    private void CheckCollisionWithObstacles(VisualElement icon, ref Vector2 currentPos, ref Vector2 direction, ref bool hasCollision)
+    {
+        float radius = icon.layout.width * 0.5f;
+        for (int i = 0; i < otherObjects.Count; ++i)
+        {
+            Rect obstacleRect = otherObjects[i].layout;
+
+            if (RectCircleCollision(currentPos, radius, obstacleRect))
+            {
+                hasCollision = true;
+
+                Vector2 normal = GetCollisionNormal(currentPos, radius, obstacleRect);
+
+                // Calculate the reflection vector
+                Vector2 reflection = Vector2.Reflect(direction, normal);
+
+                // Update the direction
+                direction = reflection;
+
+                // Move the current position to the closest point on the obstacle boundary
+                float distanceToBoundary = Mathf.Min(Mathf.Abs(currentPos.x - obstacleRect.xMin), Mathf.Abs(currentPos.x - obstacleRect.xMax), Mathf.Abs(currentPos.y - obstacleRect.yMin), Mathf.Abs(currentPos.y - obstacleRect.yMax));
+                currentPos += reflection.normalized * (distanceToBoundary + 0.1f);
+
+            }
+        }
+    }
+    
+    private void CheckCollisionWithItems(VisualElement icon, ref Vector2 currentPos, ref Vector2 direction, ref bool hasCollision, float velocity)
+    {
+        float radius = icon.layout.width * 0.5f;
+        for (int i = 0; i < otherCircles.Count; ++i)
+        {
+            if (icon == otherCircles[i].Item)
+                continue;
+
+            Vector2 otherCenter = otherCircles[i].Item.layout.center;
+            float otherRadius = otherCircles[i].Item.layout.width * 0.5f;
+
+            if (CircleCircleCollision(currentPos, radius, otherCenter, otherRadius))
+            {
+                hasCollision = true;
+
+                Vector2 normal = (currentPos - otherCenter).normalized;
+
+                // Calculate the reflection vector
+                Vector2 reflection = Vector2.Reflect(direction, normal);
+
+                // Update the direction
+                direction = reflection;
+
+                // Move the current position to the closest point on the obstacle boundary
+                float distanceToBoundary = Mathf.Abs(Vector2.Distance(currentPos, otherCenter) - (radius + otherRadius));
+                currentPos += reflection.normalized * (distanceToBoundary + 0.1f);
+
+                // Add score
+                //score++;
+                //scoreLabel.text = "Score: " + score.ToString();
+                otherCircles[i].Hp--;
+                if (otherCircles[i].Hp == 0)
+                {
+                    otherCircles.RemoveAt(i);
+                }
+                else
+                {
+                    otherCircles[i].ReflectPosition(reflection * velocity);
+                }
+                Debug.Log(icon.name + " collision");
+            }
+        }
+    }
+
     private Vector2 ClosestPointOnRectBoundary(Vector2 point, Rect rect)
     {
         if (rect.Contains(point))
@@ -234,5 +270,5 @@ public class Controller : MonoBehaviour
             return false;
         }
     }
-
+    
 }

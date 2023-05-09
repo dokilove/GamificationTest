@@ -25,10 +25,10 @@ public class ColorizerTest : MonoBehaviour
 
         List<BreakableItem> otherCircles = new List<BreakableItem>();
         VisualElement item1 = root.Q<VisualElement>("TestItem1");
-        BreakableItem breakableItem1 = new BreakableItem(item1);
+        BreakableItem breakableItem1 = new BreakableItem(item1, controller);
         otherCircles.Add(breakableItem1);
         VisualElement item2 = root.Q<VisualElement>("TestItem2");
-        BreakableItem breakableItem2 = new BreakableItem(item2);
+        BreakableItem breakableItem2 = new BreakableItem(item2, controller);
         otherCircles.Add(breakableItem2);
 
         VisualElement stage = root.Q<VisualElement>("stage");

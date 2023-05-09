@@ -5,6 +5,8 @@ using UnityEngine.UIElements;
 
 public class BreakableItem
 {
+    Controller controller;
+
     private VisualElement item;
     public VisualElement Item { get
         {
@@ -36,8 +38,14 @@ public class BreakableItem
         }
     }
     
-    public BreakableItem(VisualElement item)
+    public BreakableItem(VisualElement item, Controller controller)
     {
         this.item = item;
+        this.controller = controller;
+    }
+
+    public void ReflectPosition(Vector2 direction)
+    {
+        controller.UpdateItemPosition(this, direction);
     }
 }

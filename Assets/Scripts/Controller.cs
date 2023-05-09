@@ -14,12 +14,15 @@ public class Controller : MonoBehaviour
     IEnumerator moveCoroutine;
 
     List<VisualElement> otherObjects;
+    List<BreakableItem> otherCircles;
+
     Label debugLabel;
 
-    public void SetStage(VisualElement stage, List<VisualElement> otherObjects, Label debugLabel)
+    public void SetStage(VisualElement stage, List<VisualElement> otherObjects, List<BreakableItem> otherCircles, Label debugLabel)
     {
         this.stage = stage;
         this.otherObjects = otherObjects;
+        this.otherCircles = otherCircles;
         this.debugLabel = debugLabel;
     }
 
@@ -80,6 +83,36 @@ public class Controller : MonoBehaviour
 
                     }
                 }
+
+                for (int i = 0; i < otherCircles.Count; ++i)
+                {
+                    Vector2 otherCenter = otherCircles[i].Item.layout.center;
+                    float otherRadius = otherCircles[i].Item.layout.width * 0.5f;
+
+                    if (CircleCircleCollision(currentPos, radius, otherCenter, otherRadius))
+                    {
+                        hasCollision = true;
+
+                        Vector2 normal = (currentPos - otherCenter).normalized;
+
+                        // Calculate the reflection vector
+                        Vector2 reflection = Vector2.Reflect(direction, normal);
+
+                        // Update the direction
+                        direction = reflection;
+
+                        // Move the current position to the closest point on the obstacle boundary
+                        float distanceToBoundary = Mathf.Abs(Vector2.Distance(currentPos, otherCenter) - (radius + otherRadius));
+                        currentPos += reflection.normalized * (distanceToBoundary + 0.1f);
+
+                        // Add score
+                        //score++;
+                        //scoreLabel.text = "Score: " + score.ToString();
+                        otherCircles[i].Hp--;
+                    }
+                }
+
+
             }
 
             if (!hasCollision && !isInsideStage)
@@ -108,74 +141,6 @@ public class Controller : MonoBehaviour
 
         }
     }
-
-
-    //IEnumerator MoveToTargetCoroutine(VisualElement icon, Vector2 diff)
-    //{
-    //    Vector2 initialPos = new Vector2(icon.layout.center.x, icon.layout.center.y);
-    //    Vector2 targetPos = new Vector2(icon.layout.center.x - diff.x, icon.layout.center.y - diff.y);
-
-    //    float velocity = (initialPos - targetPos).magnitude;
-
-    //    Vector2 currentPos = initialPos;
-
-    //    float diffX = -diff.x;
-    //    float diffY = -diff.y;
-    //    Vector2 direction = new Vector2(diffX, diffY).normalized;
-
-    //    while (velocity > 0.0f)
-    //    {
-
-    //        currentPos += direction * velocity * speed * Time.deltaTime;
-
-    //        // Rect 안에 있지 않으면 방향을 바꿔줍니다.
-    //        if (!stage.layout.Contains(currentPos))
-    //        {
-    //            // Find the closest point on the rect boundary
-    //            Vector2 closestPoint = ClosestPointOnRectBoundary(currentPos, stage.layout);
-
-    //            // Calculate the reflection vector
-    //            Vector2 normal = (currentPos - closestPoint).normalized;
-    //            Vector2 reflection = Vector2.Reflect(direction, normal);
-
-    //            // Update the direction
-    //            direction = reflection;
-                
-    //            currentPos = closestPoint + direction.normalized * (velocity * speed * Time.deltaTime - Vector2.Distance(currentPos, closestPoint));
-    //        }
-    //        else if (null != otherObjects)
-    //        {
-    //            for (int i = 0; i < otherObjects.Count; ++i)
-    //            {
-    //                VisualElement otherObject = otherObjects[i];
-    //                if (PointRectCollision(currentPos, otherObject.layout))
-    //                {
-    //                    // Find the closest point on the rect boundary
-    //                    Vector2 closestPoint = ClosestPointOnRectBoundary(currentPos, otherObject.layout);
-
-    //                    // Calculate the reflection vector
-    //                    Vector2 normal = (currentPos - closestPoint).normalized;
-    //                    Vector2 reflection = Vector2.Reflect(direction, normal);
-    //                    //Debug.Log("normal " + normal);
-    //                    // Update the direction
-    //                    direction = reflection;
-
-    //                    currentPos = closestPoint + direction.normalized * (velocity * speed * Time.deltaTime - Vector2.Distance(currentPos, closestPoint));
-    //                }
-    //            }
-    //        }
-
-    //        //Debug.Log(stage.layout.Contains(icon.layout.center));
-
-    //        velocity -= friction;
-
-    //        icon.style.left = currentPos.x - icon.layout.width * 0.5f;
-    //        icon.style.top = currentPos.y - icon.layout.height * 0.5f;
-      
-    //        yield return null;
-    //    }
-    //}
-
     private Vector2 ClosestPointOnRectBoundary(Vector2 point, Rect rect)
     {
         if (rect.Contains(point))
@@ -196,17 +161,6 @@ public class Controller : MonoBehaviour
         }
 
         return new Vector2(closestX, closestY);
-    }
-    bool PointRectCollision(float radius, Vector2 point, Rect rect)
-    {
-        if (point.x + radius < rect.xMin || point.x - radius > rect.xMax ||
-            point.y + radius < rect.yMin || point.y - radius > rect.yMax)
-        {
-            // point is outside rect bounds
-            return false;
-        }
-
-        return true;
     }
 
     bool RectCircleCollision(Vector2 circleCenter, float circleRadius, Rect rect)
@@ -266,5 +220,19 @@ public class Controller : MonoBehaviour
         return Vector2.zero;
     }
 
+    bool CircleCircleCollision(Vector2 center1, float radius1, Vector2 center2, float radius2)
+    {
+        float distance = Vector2.Distance(center1, center2);
+        float radiusSum = radius1 + radius2;
+
+        if (distance < radiusSum)
+        {
+            return true;
+        }
+        else
+        {
+            return false;
+        }
+    }
 
 }

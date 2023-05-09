@@ -23,8 +23,16 @@ public class ColorizerTest : MonoBehaviour
         test3.AddManipulator(new MouseManipulatorTest(debugLabel));
         otherObjects.Add(test3);
 
+        List<BreakableItem> otherCircles = new List<BreakableItem>();
+        VisualElement item1 = root.Q<VisualElement>("TestItem1");
+        BreakableItem breakableItem1 = new BreakableItem(item1);
+        otherCircles.Add(breakableItem1);
+        VisualElement item2 = root.Q<VisualElement>("TestItem2");
+        BreakableItem breakableItem2 = new BreakableItem(item2);
+        otherCircles.Add(breakableItem2);
+
         VisualElement stage = root.Q<VisualElement>("stage");
-        controller.SetStage(stage, otherObjects, debugLabel);
+        controller.SetStage(stage, otherObjects, otherCircles,  debugLabel);
 
 
         VisualElement elasticBand = root.Q<VisualElement>("elastic_band");

@@ -30,14 +30,14 @@ public class MouseManipulatorTest : MouseManipulator
     void OnMouseDown(MouseDownEvent evt)
     {
 
-        if (CanStartManipulation(evt))
-        {
-            target.style.backgroundColor = new Color(0, 1, 0);
-        }
-        else
-        {
-            target.style.backgroundColor = new Color(1, 0, 0);
-        }
+        //if (CanStartManipulation(evt))
+        //{
+        //    target.style.backgroundColor = new Color(0, 1, 0);
+        //}
+        //else
+        //{
+        //    target.style.backgroundColor = new Color(1, 0, 0);
+        //}
 
         startPos = evt.localMousePosition;
 
@@ -64,8 +64,6 @@ public class MouseManipulatorTest : MouseManipulator
             return;
 
         target.ReleaseMouse();
-
-        target.style.backgroundColor = new Color(0.5f, 0.5f, 0.7f);
 
     }
 }

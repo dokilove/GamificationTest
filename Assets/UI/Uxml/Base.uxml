@@ -7,6 +7,6 @@
         <ui:VisualElement name="elastic_band" style="position: absolute; background-color: rgb(255, 0, 0); width: 200px; height: 400px; top: 660px; left: 472px;">
             <ui:VisualElement style="width: 75px; height: 75px; background-color: rgb(255, 255, 255); border-top-left-radius: 50px; border-bottom-left-radius: 50px; border-top-right-radius: 50px; border-bottom-right-radius: 50px;" />
         </ui:VisualElement>
-        <ui:Label text="Label" display-tooltip-when-elided="true" name="label_debug" style="position: absolute; font-size: 60px; top: 21px; left: 33px; color: rgba(255, 255, 255, 255);" />
+        <ui:Label text="Label" display-tooltip-when-elided="true" name="label_debug" picking-mode="Ignore" style="position: absolute; font-size: 60px; top: 21px; left: 33px; color: rgb(255, 255, 255);" />
     </ui:VisualElement>
 </ui:UXML>
